@@ -1,0 +1,713 @@
+{
+  "name": "Automated Lead Follow-up & Reactivation",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### Phase 1: Gmail Trigger\n\nDetect incoming replies from leads.",
+        "height": 480,
+        "width": 520
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        140
+      ],
+      "id": "8ab87cbe-aa20-4888-bd35-bc6bf25db9f0",
+      "name": "Phase 1: Gmail Trigger"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "sender": "="
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -380,
+        340
+      ],
+      "id": "d5dac907-0336-4f48-89a0-34c86ed6c786",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "HlMfe7wkfcPlvmsq",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "### Phase 2: Lead Lookup & Response Check\n\nGet all leads from Google Sheets.",
+        "height": 480,
+        "width": 380
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        140,
+        140
+      ],
+      "id": "021e8adc-bece-4b08-8b28-98110eac8766",
+      "name": "Phase 2: Lead Lookup"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1f6SOVI7gZ_qwglxks-Mp8tTO42fdREyMd0zrlHkm_Do",
+          "mode": "list",
+          "cachedResultName": "old_leads_50",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f6SOVI7gZ_qwglxks-Mp8tTO42fdREyMd0zrlHkm_Do/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f6SOVI7gZ_qwglxks-Mp8tTO42fdREyMd0zrlHkm_Do/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "email",
+              "lookupValue": "=zeruspeaks@gmail.com"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -40,
+        340
+      ],
+      "id": "3085e6f7-d8cd-4753-acfd-9e176084b7b4",
+      "name": "Get Leads (Google Sheets)",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rlHUw391sihS60n8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "### Phase 3: Response Check\n\nCheck if the lead replied to the first outreach.",
+        "height": 480,
+        "width": 540
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1260,
+        140
+      ],
+      "id": "960d4489-74c3-433f-af7d-a61a620371f9",
+      "name": "Phase 3: Response Check"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ee5bb031-6e6f-42df-84fb-2cd82b58dbc2",
+              "leftValue": "={{ $('Extract Email').item.json.senderEmail }}",
+              "rightValue": "={{ $json.email }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        180,
+        340
+      ],
+      "id": "004f5988-14d7-4dcd-8e2c-b0285ff3c940",
+      "name": "Lead Responds?"
+    },
+    {
+      "parameters": {
+        "content": "### Phase 4: Wait & leads who didn't replied\n\nWait 2 days before sending a follow-up if no reply.",
+        "height": 500,
+        "width": 620
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        560,
+        120
+      ],
+      "id": "7029f1cc-4de4-4133-880e-d94cb3fa6c75",
+      "name": "Phase 4: Wait"
+    },
+    {
+      "parameters": {
+        "content": "### Phase 5: Second Outreach\n\nSend a second personalized outreach if no reply.",
+        "height": 480,
+        "width": 560
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1880,
+        140
+      ],
+      "id": "298ee819-e7cd-4d42-b1ee-d05be323d4d5",
+      "name": "Phase 5: Second Outreach"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.first_name }}\n{{ $json.status }}\n{{ $json.date_created }}\n{{ $json.status }}\n{{ $json.last_contacted }}\n{{ $json.notes }}\n",
+        "options": {
+          "systemMessage": "You are an expert marketing assistant for a high-end woodworking company. Your task is to analyze data for a 'dead' lead and compose a personalized, warm, and compelling reactivation email.\n\n1. OUTPUT FORMAT: Respond with a single, valid JSON object and nothing else.\n2. JSON STRUCTURE: {subject, greeting, opening_line, value_proposition, call_to_action}.\n3. TONE: Warm, personal, professional, not pushy.\n4. PERSONALIZATION: Use 'notes' to infer interest.\n5. CONTENT: subject, greeting, opening_line, value_proposition, call_to_action."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1300,
+        300
+      ],
+      "id": "6d1537c5-b4c9-4bf9-a7ec-d2ae58de3695",
+      "name": "Compose 2nd Email (Gemini AI)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format AI output for email\nconst processedItems = [];\nfor (const item of $input.all()) {\n  const aiOutputString = item.json.output;\n  try {\n    const cleanedString = aiOutputString.replace(/^```json\\n|```$/g, '');\n    const aiData = JSON.parse(cleanedString);\n    const subject = aiData.subject;\n    const message = `${aiData.greeting}<br><br>${aiData.opening_line}<br><br>${aiData.value_proposition}<br><br>${aiData.call_to_action}`;\n    const closings = `<br><br>Best regards,<br><br>The [Woodworking Company] Team`;\n    item.json.emailSubject = subject;\n    item.json.emailMessage = message;\n    item.json.emailClosings = closings;\n    delete item.json.output;\n    processedItems.push(item);\n  } catch (error) { continue; }\n}\nreturn processedItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1660,
+        300
+      ],
+      "id": "0dd1053d-ada0-4285-aca5-508c1ce1678d",
+      "name": "Format 2nd AI Output for Email"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "={{ $json.emailSubject }}",
+        "message": "={{ $json.emailMessage }}\n\n{{ $json.emailClosings }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2040,
+        300
+      ],
+      "id": "b3261c32-200b-4231-9409-c9b2874f58fa",
+      "name": "Send 2nd Outreach Email",
+      "webhookId": "29b5b664-0a32-4f26-9d16-b77ac0923e9a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "HlMfe7wkfcPlvmsq",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1f6SOVI7gZ_qwglxks-Mp8tTO42fdREyMd0zrlHkm_Do",
+          "mode": "list",
+          "cachedResultName": "old_leads_50",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f6SOVI7gZ_qwglxks-Mp8tTO42fdREyMd0zrlHkm_Do/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f6SOVI7gZ_qwglxks-Mp8tTO42fdREyMd0zrlHkm_Do/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{ $json.email }}",
+            "reactivation_timestamp ": "={{ $now }}",
+            "reengaged  ": "Yes"
+          },
+          "matchingColumns": [
+            "email"
+          ],
+          "schema": [
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "date_created",
+              "displayName": "date_created",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "last_contacted",
+              "displayName": "last_contacted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reengaged  ",
+              "displayName": "reengaged  ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reactivation_timestamp ",
+              "displayName": "reactivation_timestamp ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        560,
+        -80
+      ],
+      "id": "f29791bf-9f33-4b25-bf33-cde85a27148b",
+      "name": "Log Reactivation Status (Google Sheets)",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rlHUw391sihS60n8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        460
+      ],
+      "id": "b0eb131a-7474-4e15-8d92-371ded437cd6",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "QK7gPHgHICV4nP2G",
+          "name": "Gemini(PaLM) Api "
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        940,
+        980
+      ],
+      "id": "62b9a51b-a03e-48d0-92ec-7a7edb0e9685",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C090DURJ0HK",
+          "mode": "list",
+          "cachedResultName": "workflow-errors"
+        },
+        "text": "Test",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1260,
+        980
+      ],
+      "id": "23e87130-51ef-4a6f-afbd-fbde9607d1b1",
+      "name": "Slack",
+      "webhookId": "d679d35f-8a5d-498f-a78d-d337b5f072d3",
+      "credentials": {
+        "slackApi": {
+          "id": "ZOhAUnNqZ9m22YXN",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Global Error Handling",
+        "height": 480,
+        "width": 540
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        900,
+        820
+      ],
+      "id": "2f643797-4496-4914-819a-f6721bdf2557",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawFrom = $json[\"From\"] || \"\";\nconst emailMatch = rawFrom.match(/<([^>]+)>/);\nconst senderEmail = emailMatch ? emailMatch[1] : rawFrom;\n\nreturn {\n  json: {\n    senderEmail\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -220,
+        340
+      ],
+      "id": "8bb5d0d0-b8ef-448e-a8d0-82c5701c52dd",
+      "name": "Extract Email"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1f6SOVI7gZ_qwglxks-Mp8tTO42fdREyMd0zrlHkm_Do",
+          "mode": "list",
+          "cachedResultName": "old_leads_50",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f6SOVI7gZ_qwglxks-Mp8tTO42fdREyMd0zrlHkm_Do/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f6SOVI7gZ_qwglxks-Mp8tTO42fdREyMd0zrlHkm_Do/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [
+        820,
+        340
+      ],
+      "id": "9c6d78ee-08b7-484d-b58d-814bff7bb265",
+      "name": "Read Leads (Google Sheets)",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rlHUw391sihS60n8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filter for: status=open, >90 days old, not contacted in last 30 days, not already re-engaged\nconst ninetyDaysAgo = $now.minus({ days: 90 });\nconst thirtyDaysAgo = $now.minus({ days: 30 });\nconst filtered = [];\nfor (const item of $input.all()) {\n  const lead = item.json;\n  if (lead.status !== 'open') continue;\n  const created = new Date(lead.date_created);\n  if (!(created < ninetyDaysAgo.toJSDate())) continue;\n  const lastContacted = lead.last_contacted ? new Date(lead.last_contacted) : null;\n  if (lastContacted && lastContacted >= thirtyDaysAgo.toJSDate()) continue;\n  if (lead.reengaged === 'Yes' || lead.reengaged === 'TRUE' || lead.reengaged === true) continue;\n  filtered.push(item);\n}\nreturn filtered;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1020,
+        340
+      ],
+      "id": "5a6ec2d1-37a2-4ace-a057-4bc74f6ce5d0",
+      "name": "Filter for Prime Leads"
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "days"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        600,
+        340
+      ],
+      "id": "af3b9998-0d0a-402c-98b0-512916e543c3",
+      "name": "Wait",
+      "webhookId": "6fa16df7-f903-48ae-b1a0-0f65c14e4a63"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Leads (Google Sheets)": {
+      "main": [
+        [
+          {
+            "node": "Lead Responds?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Responds?": {
+      "main": [
+        [
+          {
+            "node": "Log Reactivation Status (Google Sheets)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose 2nd Email (Gemini AI)": {
+      "main": [
+        [
+          {
+            "node": "Format 2nd AI Output for Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format 2nd AI Output for Email": {
+      "main": [
+        [
+          {
+            "node": "Send 2nd Outreach Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send 2nd Outreach Email": {
+      "main": [
+        []
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Compose 2nd Email (Gemini AI)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Email": {
+      "main": [
+        [
+          {
+            "node": "Get Leads (Google Sheets)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Leads (Google Sheets)": {
+      "main": [
+        [
+          {
+            "node": "Filter for Prime Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter for Prime Leads": {
+      "main": [
+        [
+          {
+            "node": "Compose 2nd Email (Gemini AI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Read Leads (Google Sheets)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d72bcf64-770c-4076-b533-a0870d502c91",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8e58eb7146c9984eb591b78514f724ac4bb75c7185b48e47fa000476c831d362"
+  },
+  "id": "Q0RJdjeylZFDeKAK",
+  "tags": []
+}
