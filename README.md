@@ -1,13 +1,20 @@
 # 🚀 Automated Lead Reactivation System
 
-A sophisticated, AI-powered lead reactivation system built with n8n that automatically re-engages "dead" leads for woodworking companies. This system intelligently filters leads, composes personalized outreach emails using Gemini AI, and tracks reactivation success.
+AI-powered lead reactivation system built with n8n that automatically re-engages "dead" leads for woodworking companies. This system intelligently filters leads, composes personalized outreach emails using Gemini AI, and tracks reactivation success.
 
 ## 📋 Project Overview
 
 This system addresses the common challenge of reactivating leads who showed initial interest but never converted. It implements a two-workflow approach:
 
 1. **Initial Outreach Workflow** - Identifies and contacts prime reactivation candidates
+<img width="1484" height="796" alt="Automated Lead Reactivation   Outreach" src="https://github.com/user-attachments/assets/d232dcb6-d57b-49c5-9adc-c633a0aec55a" />
+
+
+   
 2. **Follow-up & Reactivation Workflow** - Manages responses and sends follow-up communications
+<img width="1585" height="800" alt="Automated Lead Follow-up   Reactivation" src="https://github.com/user-attachments/assets/34c97bf0-b373-4fdf-a22d-86f0e2fcf037" />
+
+
 
 ## ✨ Key Features
 
